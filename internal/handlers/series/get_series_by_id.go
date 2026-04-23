@@ -71,6 +71,7 @@ func GetSeriesById(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		serie.ImagePath = utils.BuildImageURL(r, serie.ImagePath)
 		var rating models.Rating
 		queryRating := `
 				select id, series_id, content, stars_quantity, created_at

@@ -138,6 +138,8 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 				utils.WriteJSONError(w, "error reading database rows", http.StatusInternalServerError)
 				return
 			}
+
+			series.ImagePath = utils.BuildImageURL(r, series.ImagePath)
 			seriesList = append(seriesList, series)
 		}
 

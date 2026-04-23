@@ -6,9 +6,15 @@ import (
 	"backend/internal/routes"
 	"log"
 	"net/http"
+	"backend/internal/utils"
 )
 
 func main(){
+	mux := http.NewServeMux()
+
+	if err := utils.EnsureUploadsDir(); err != nil {
+	log.Fatal(err)
+	}
 	db, dbErr  := database.ConnectDB()
 	
 	if dbErr != nil {
@@ -27,15 +33,16 @@ func main(){
 	if seedErr != nil {
 		log.Fatal(seedErr)
 	}
-	
-	mux := http.NewServeMux()
 
 	routes.RegisterRoutes(mux, db)
+
+	fileServer := http.FileServer(http.Dir("./uploads"))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", fileServer))
 
 	handler:= middleware.EnableCors(mux)
 
 	err := http.ListenAndServe(":8080", handler)
-	
+	log.Println("server running on :8080")
 	if err != nil {
 		log.Fatal(err)
 	}

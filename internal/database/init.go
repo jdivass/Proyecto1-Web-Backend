@@ -1,11 +1,17 @@
 package database
+
 import (
 	"database/sql"
+	"log"
 )
 
 func InitializeDB(db *sql.DB) (err error) {
-	query := `
-	PRAGMA foreign_keys = ON;
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		log.Println("Pragma ERROR", err)
+		return err
+	}
+	querySeries := `
 	create table if not exists series (
 		id integer primary key autoincrement,
 		title text not null,
@@ -24,18 +30,27 @@ func InitializeDB(db *sql.DB) (err error) {
 		updated_at datetime default current_timestamp,
 
 		image_path text
-	);
-
-	create table if not exists ratings (
+	)`
+	_, err = db.Exec(querySeries)
+	if err != nil {
+		log.Println("series table ERROR", err)
+		return err
+	}
+	queryRatings := `
+		create table if not exists ratings (
 		id integer primary key autoincrement,
 		series_id integer unique references series(id) on delete cascade,
 		content text,
 		stars_quantity integer not null,
-		constraint check_stars check (stars_quantity between 1 and 5),
-		created_at datetime default current_timestamp
-	);
+		created_at datetime default current_timestamp,
+		constraint check_stars check (stars_quantity between 1 and 5)
+	)
 	`
-	_, err = db.Exec(query)
+	_, err = db.Exec(queryRatings)
+	if err != nil {
+		log.Println("ratings table ERROR", err)
+		return err
+	}
 
-	return err
+	return nil
 }

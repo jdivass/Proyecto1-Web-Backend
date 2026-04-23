@@ -18,13 +18,13 @@ func GetSeriesById(db *sql.DB) http.HandlerFunc {
 		}
 
 		idStr := r.PathValue("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
+		id, idErr := strconv.Atoi(idStr)
+		if idErr != nil {
 			utils.WriteJSONError(w, "invalid series id", http.StatusBadRequest)
 			return
 		}
 
-		query :=
+		querySeries :=
 			`SELECT id,
 						title,
 						genre,
@@ -42,7 +42,7 @@ func GetSeriesById(db *sql.DB) http.HandlerFunc {
 						WHERE id = ?
 				`
 
-		row := db.QueryRow(query, id)
+		row := db.QueryRow(querySeries, id)
 
 		var serie models.Series
 		row_err := row.Scan(
@@ -71,6 +71,26 @@ func GetSeriesById(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		var rating models.Rating
+		queryRating := `
+				select id, series_id, content, stars_quantity, created_at
+				from ratings
+				where series_id = ?
+			`
+		ratingErr := db.QueryRow(queryRating, id).Scan(&rating.ID,
+			&rating.SeriesID,
+			&rating.Content,
+			&rating.StarsQuantity,
+			&rating.CreatedAt)
+
+		if ratingErr != nil && ratingErr != sql.ErrNoRows {
+			utils.WriteJSONError(w, "rating query error", http.StatusInternalServerError)
+			return
+		}
+
+		if ratingErr == nil {
+			serie.Rating = &rating
+		}
 		utils.WriteJSONResponse(w, serie, http.StatusOK)
 	}
 }

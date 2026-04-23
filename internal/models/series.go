@@ -20,4 +20,6 @@ type Series struct {
  
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	Rating *Rating `json:"rating,omitempty"`
 }

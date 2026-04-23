@@ -5,7 +5,7 @@ import (
 	"backend/internal/models"
 )
 
-func ValidateRatings(rating models.Ratings) error {
+func ValidateRatings(rating models.Rating) error {
 	if rating.StarsQuantity < 1 || rating.StarsQuantity > 5 {
 		return errors.New("stars must be a value between 1 and 5")
 	}

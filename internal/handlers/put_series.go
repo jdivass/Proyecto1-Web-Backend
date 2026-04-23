@@ -45,7 +45,7 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 		err = row.Scan(&existingID)
 
 		if err == sql.ErrNoRows {
-			utils.WriteJSONError(w, "cannot find that series", http.StatusNotFound)
+			utils.WriteJSONError(w, "series not found", http.StatusNotFound)
 			return
 		}
 
@@ -90,7 +90,7 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 		rowsAffected, _ := updateResult.RowsAffected()
 
 		if rowsAffected == 0 {
-			utils.WriteJSONError(w, "cannot find that series", http.StatusNotFound)
+			utils.WriteJSONError(w, "series not found", http.StatusNotFound)
 			return
 		}
 

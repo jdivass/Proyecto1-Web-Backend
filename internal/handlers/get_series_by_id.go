@@ -67,7 +67,7 @@ func GetSeriesById(db *sql.DB) http.HandlerFunc {
 		}
 
 		if row_err != nil {
-			utils.WriteJSONError(w, "error finding the series", http.StatusInternalServerError)
+			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
 			return
 		}
 

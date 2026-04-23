@@ -66,7 +66,7 @@ func CreateSeries(db *sql.DB) http.HandlerFunc {
 		id, lastInsertErr := result.LastInsertId()
 		
 		if lastInsertErr != nil {
-			utils.WriteJSONError(w, "database insert error", http.StatusInternalServerError)
+			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
 			return
 		}
 

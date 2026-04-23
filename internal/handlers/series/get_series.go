@@ -2,7 +2,9 @@ package series
 
 import (
 	"database/sql"
+	"math"
 	"net/http"
+	"strconv"
 
 	"backend/internal/models"
 	"backend/internal/utils"
@@ -16,8 +18,48 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		pageStr := r.URL.Query().Get("page")
+
+		if pageStr == "" {
+			pageStr = "1"
+		}
+
+		limitStr := r.URL.Query().Get("limit")
+
+		if limitStr == "" {
+			limitStr = "10"
+		}
+
+		pageInt, pageErr := strconv.Atoi(pageStr)
+
+		if pageErr != nil {
+			utils.WriteJSONError(w, "error getting page", http.StatusInternalServerError)
+			return
+		}
+
+		limitInt, limitErr := strconv.Atoi(limitStr)
+
+		if limitErr != nil {
+			utils.WriteJSONError(w, "error getting limit", http.StatusInternalServerError)
+			return
+		}
+
+		offset := (pageInt - 1) * limitInt
+
+		queryTotal := `
+			select count(*)
+			from series
+			`
+		var totalCount int
+		totalErr := db.QueryRow(queryTotal).Scan(&totalCount)
+
+		if totalErr != nil {
+			utils.WriteJSONError(w, "error getting total series", http.StatusInternalServerError)
+			return
+		}
+
 		query := `
-			SELECT
+			select
 				id,
 				title,
 				genre,
@@ -31,11 +73,12 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 				current_episode,
 				created_at,
 				updated_at
-			FROM series
-			ORDER BY id DESC
+			from series
+			order by id desc
+			limit ?
+			offset ?
 		`
-
-		rows, err := db.Query(query)
+		rows, err := db.Query(query, limitInt, offset)
 		if err != nil {
 			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
 			return
@@ -75,6 +118,13 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteJSONResponse(w, seriesList, http.StatusOK)
+		total_pages := math.Ceil(float64(totalCount) / float64(limitInt))
+		utils.WriteJSONResponse(w, map[string]any{
+			"data":        seriesList,
+			"total":       totalCount,
+			"page":        pageInt,
+			"limit":       limitInt,
+			"total_pages": total_pages,
+		}, http.StatusOK)
 	}
 }

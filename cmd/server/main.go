@@ -22,6 +22,12 @@ func main(){
 	if initErr != nil {
 		log.Fatal(initErr)
 	}
+
+	seedErr := database.SeedDatabase(db)
+	if seedErr != nil {
+		log.Fatal(seedErr)
+	}
+	
 	mux := http.NewServeMux()
 
 	routes.RegisterRoutes(mux, db)

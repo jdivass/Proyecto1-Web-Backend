@@ -4,9 +4,12 @@ import (
 	"backend/internal/models"
 	"backend/internal/utils"
 	"database/sql"
-	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 )
 
 func UpdateSeries(db *sql.DB) http.HandlerFunc {
@@ -15,7 +18,6 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 			utils.WriteJSONError(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		defer r.Body.Close()
 
 		idStr := r.PathValue("id")
 		id, err := strconv.Atoi(idStr)
@@ -24,32 +26,87 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		var series models.Series
-		err = json.NewDecoder(r.Body).Decode(&series)
-
+		err = r.ParseMultipartForm(10 << 20)
 		if err != nil {
-			utils.WriteJSONError(w, "invalid request body", http.StatusBadRequest)
+			utils.WriteJSONError(w, "invalid multipart form", http.StatusBadRequest)
 			return
 		}
 
-		seriesErr := utils.ValidateSeries(series)
+		var series models.Series
+		series.Title = r.FormValue("title")
+		series.Genre = r.FormValue("genre")
+		series.Description = r.FormValue("description")
+		series.Platform = r.FormValue("platform")
 
-		if seriesErr != nil {
-			utils.WriteJSONError(w, seriesErr.Error(), http.StatusBadRequest)
+		status, err := strconv.Atoi(r.FormValue("status"))
+		if err != nil {
+			utils.WriteJSONError(w, "invalid status", http.StatusBadRequest)
 			return
 		}
+		series.Status = status
 
-		row := db.QueryRow("select id from series where id = ?", id)
+		totalSeasons, err := strconv.Atoi(r.FormValue("total_seasons"))
+		if err != nil {
+			utils.WriteJSONError(w, "invalid total_seasons", http.StatusBadRequest)
+			return
+		}
+		series.TotalSeasons = totalSeasons
+
+		totalEpisodes, err := strconv.Atoi(r.FormValue("total_episodes"))
+		if err != nil {
+			utils.WriteJSONError(w, "invalid total_episodes", http.StatusBadRequest)
+			return
+		}
+		series.TotalEpisodes = totalEpisodes
+
+		currentSeason, err := strconv.Atoi(r.FormValue("current_season"))
+		if err != nil {
+			utils.WriteJSONError(w, "invalid current_season", http.StatusBadRequest)
+			return
+		}
+		series.CurrentSeason = currentSeason
+
+		currentEpisode, err := strconv.Atoi(r.FormValue("current_episode"))
+		if err != nil {
+			utils.WriteJSONError(w, "invalid current_episode", http.StatusBadRequest)
+			return
+		}
+		series.CurrentEpisode = currentEpisode
+
+		var currentImagePath string
+		db.QueryRow("select image_path from series where id = ?", id).Scan(&currentImagePath)
+
+		imagePath := currentImagePath
+
+		file, header, fileErr := r.FormFile("image")
+		if fileErr == nil {
+			defer file.Close()
+			fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
+			dst, err := os.Create("uploads/" + fileName)
+			if err == nil {
+				defer dst.Close()
+				_, copyErr := io.Copy(dst, file)
+				if copyErr == nil {
+					imagePath = "uploads/" + fileName
+				}
+			}
+		}
+
+		series.ImagePath = imagePath
+
+		validateErr := utils.ValidateSeries(series)
+		if validateErr != nil {
+			utils.WriteJSONError(w, validateErr.Error(), http.StatusBadRequest)
+			return
+		}
 
 		var existingID int
-		err = row.Scan(&existingID)
-
-		if err == sql.ErrNoRows {
+		scanErr := db.QueryRow("select id from series where id = ?", id).Scan(&existingID)
+		if scanErr == sql.ErrNoRows {
 			utils.WriteJSONError(w, "series not found", http.StatusNotFound)
 			return
 		}
-
-		if err != nil {
+		if scanErr != nil {
 			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
 			return
 		}
@@ -70,7 +127,7 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 				updated_at = current_timestamp
 			where id = ?
 		`
-		updateResult, updateQueryErr := db.Exec(updateQuery,
+		_, updateErr := db.Exec(updateQuery,
 			series.Title,
 			series.Genre,
 			series.Description,
@@ -80,17 +137,12 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 			series.TotalSeasons,
 			series.TotalEpisodes,
 			series.CurrentSeason,
-			series.CurrentEpisode, id)
+			series.CurrentEpisode,
+			id,
+		)
 
-		if updateQueryErr != nil {
+		if updateErr != nil {
 			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
-			return
-		}
-
-		rowsAffected, _ := updateResult.RowsAffected()
-
-		if rowsAffected == 0 {
-			utils.WriteJSONError(w, "series not found", http.StatusNotFound)
 			return
 		}
 

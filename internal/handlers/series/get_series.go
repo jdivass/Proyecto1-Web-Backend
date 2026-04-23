@@ -39,6 +39,7 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 			"title": true,
 			"created_at": true,
 			"total_seasons": true,
+			"total_episodes": true,
 		}
 
 		if sort == "" || !allowedSorts[sort]{

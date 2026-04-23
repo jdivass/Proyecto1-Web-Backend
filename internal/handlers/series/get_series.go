@@ -29,6 +29,33 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 		if limitStr == "" {
 			limitStr = "10"
 		}
+		
+		search := r.URL.Query().Get("q")
+		sort := r.URL.Query().Get("sort")
+		order := r.URL.Query().Get("order")
+
+		allowedSorts := map[string]bool{
+			"id": true,
+			"title": true,
+			"created_at": true,
+			"total_seasons": true,
+		}
+
+		if sort == "" || !allowedSorts[sort]{
+			sort = "id"
+		}
+
+		if order != "asc" && order != "desc"{
+			order = "desc"
+		}
+
+		whereClause := ""
+
+		searchArgs:= []any{}
+		if search != "" {
+			whereClause = " where title like ?"
+			searchArgs = append(searchArgs, "%"+search+"%")
+		}
 
 		pageInt, pageErr := strconv.Atoi(pageStr)
 
@@ -49,15 +76,16 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 		queryTotal := `
 			select count(*)
 			from series
-			`
+			` + whereClause
 		var totalCount int
-		totalErr := db.QueryRow(queryTotal).Scan(&totalCount)
+		totalErr := db.QueryRow(queryTotal, searchArgs...).Scan(&totalCount)
 
 		if totalErr != nil {
 			utils.WriteJSONError(w, "error getting total series", http.StatusInternalServerError)
 			return
 		}
 
+		args := append(searchArgs, limitInt, offset)
 		query := `
 			select
 				id,
@@ -73,12 +101,12 @@ func GetSeries(db *sql.DB) http.HandlerFunc {
 				current_episode,
 				created_at,
 				updated_at
-			from series
-			order by id desc
+			from series` + whereClause + `
+			order by ` + sort + ` ` + order + `
 			limit ?
 			offset ?
 		`
-		rows, err := db.Query(query, limitInt, offset)
+		rows, err := db.Query(query, args...)
 		if err != nil {
 			utils.WriteJSONError(w, "database query error", http.StatusInternalServerError)
 			return

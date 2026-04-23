@@ -1,4 +1,4 @@
-package handlers
+package ratings
 
 import (
 	"net/http"

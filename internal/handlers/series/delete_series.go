@@ -1,4 +1,4 @@
-package handlers
+package series
 
 import (
 	"backend/internal/utils"

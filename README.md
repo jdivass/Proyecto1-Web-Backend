@@ -19,6 +19,9 @@ Backend en Go para una aplicación de seguimiento de series. Permite gestionar s
 
 ```
 backend/
+├── cmd/
+│   └── server/
+│       └── main.go
 ├── internal/
 │   ├── database/
 │   ├── handlers/
@@ -29,7 +32,6 @@ backend/
 │   ├── routes/
 │   └── utils/
 ├── uploads/
-├── main.go
 ```
 
 ---
@@ -46,7 +48,7 @@ cd Proyecto1-Web-Backend
 ### 2. Ejecutar el servidor
 
 ```bash
-go run main.go
+go run cmd/server/main.go
 ```
 
 El servidor corre en:

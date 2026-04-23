@@ -23,10 +23,6 @@ func ValidateSeries(series models.Series) error {
 		return errors.New("platform is required")
 	}
 
-	if series.ImagePath == "" {
-		return errors.New("image path is required")
-	}
-
 	if series.Status < 0 || series.Status > 2 {
 		return errors.New("status must be a value between 0 and 2")
 	}

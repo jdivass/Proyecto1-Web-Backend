@@ -4,10 +4,12 @@ import (
 	"backend/internal/models"
 	"backend/internal/utils"
 	"database/sql"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
-	"encoding/base64"
+	"time"
 )
 
 func UpdateSeries(db *sql.DB) http.HandlerFunc {
@@ -76,14 +78,17 @@ func UpdateSeries(db *sql.DB) http.HandlerFunc {
 
 		imagePath := currentImagePath
 
-		file, _, fileErr := r.FormFile("image")
+		file, header, fileErr := r.FormFile("image")
 		if fileErr == nil {
 			defer file.Close()
-			imageBytes, readErr := io.ReadAll(file)
-			if readErr == nil {
-				mime := http.DetectContentType(imageBytes)
-				b64 := base64.StdEncoding.EncodeToString(imageBytes)
-				imagePath = "data:" + mime + ";base64," + b64
+			fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
+			dst, err := os.Create("uploads/" + fileName)
+			if err == nil {
+				defer dst.Close()
+				_, copyErr := io.Copy(dst, file)
+				if copyErr == nil {
+					imagePath = "uploads/" + fileName
+				}
 			}
 		}
 

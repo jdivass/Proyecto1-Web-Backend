@@ -4,12 +4,10 @@ import (
 	"backend/internal/models"
 	"backend/internal/utils"
 	"database/sql"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
-	"time"
+	"encoding/base64"
 )
 
 func CreateSeries(db *sql.DB) http.HandlerFunc {
@@ -65,29 +63,22 @@ func CreateSeries(db *sql.DB) http.HandlerFunc {
 		if err != nil {
 			utils.WriteJSONError(w, "invalid current_episode", http.StatusBadRequest)
 			return
-		}
+		}	
 		series.CurrentEpisode = currentEpisode
 
-		ImagePath := ""
-
-		file, header, fileErr := r.FormFile("image")
+		imagePath := ""
+		file, _, fileErr := r.FormFile("image")
 		if fileErr == nil {
 			defer file.Close()
-
-			fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
-
-			dst, err := os.Create("uploads/" + fileName)
-			if err == nil {
-				defer dst.Close()
-
-				_, copyErr := io.Copy(dst, file)
-				if copyErr == nil {
-					ImagePath = "uploads/" + fileName
-				}
+			imageBytes, readErr := io.ReadAll(file)
+			if readErr == nil {
+				mime := http.DetectContentType(imageBytes)
+				b64 := base64.StdEncoding.EncodeToString(imageBytes)
+				imagePath = "data:" + mime + ";base64," + b64
 			}
 		}
 
-		series.ImagePath = ImagePath
+		series.ImagePath = imagePath
 
 		validateErr := utils.ValidateSeries(series)
 		if validateErr != nil {

@@ -4,15 +4,15 @@ import (
 	"database/sql"
 )
 
-func SeedDatabase(db *sql.DB) (err error) {
+func SeedDatabase(db *sql.DB)(err error){
 
 	query := `select exists (select 1 from series limit 1)`
 	var hasData bool
-	err = db.QueryRow(query).Scan(&hasData)
-	if err != nil {
+	 err = db.QueryRow(query).Scan(&hasData)
+	 if err != nil {
 		return err
-	}
-
+	 }
+	
 	if !hasData {
 		fillQuery := `
 			insert into series (
@@ -38,7 +38,7 @@ func SeedDatabase(db *sql.DB) (err error) {
 				62,
 				5,
 				16,
-				''
+				'uploads/breakingbad.jpg'
 			),
 			(
 				'Dark',
@@ -50,7 +50,7 @@ func SeedDatabase(db *sql.DB) (err error) {
 				26,
 				3,
 				8,
-				''
+				'uploads/dark.jpg'
 			),
 			(
 				'Attack on Titan',
@@ -62,7 +62,7 @@ func SeedDatabase(db *sql.DB) (err error) {
 				87,
 				2,
 				10,
-				''
+				'uploads/aot.jpg'
 			),
 			(
 				'Arcane',
@@ -74,7 +74,7 @@ func SeedDatabase(db *sql.DB) (err error) {
 				18,
 				1,
 				3,
-				''
+				'uploads/arcane.jpg'
 			),
 			(
 				'Stranger Things',
@@ -86,13 +86,13 @@ func SeedDatabase(db *sql.DB) (err error) {
 				34,
 				2,
 				5,
-				''
+				'uploads/strangerthings.jpg'
 			);
 		`
 		_, err = db.Exec(fillQuery)
 		if err != nil {
 			return err
-		}
+		}	
 	}
 	return nil
 }

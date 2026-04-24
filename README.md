@@ -141,20 +141,42 @@ https://proyecto1-web-backend-production.up.railway.app
 
 ---
 
-## 🔐 NOTAS IMPORTANTES
+## 🔐 APLICACIÓN FUNCIONANDO
 
-- Cada serie tiene máximo 1 rating
-- Ratings están ligados directamente a series
-- SQLite se genera automáticamente
-- CORS está habilitado
+![alt text](image.png)
 
----
 
+## 🎯CHALLENGES IMPLEMENTADOS
+
+### Criterios subjetivos
+| Challenges Implementados | Puntos |
+| -------- | -------- |
+| Calidad del historial de Git | 0 - 20 |
+| Organizacion del código | 0 - 20 |
+
+### API y Backend
+| Challenges Implementados | Puntos |
+| -------- | -------- |
+| Códigos HTTP correctos en toda la API (201 al crear, 204 al eliminar, 404 si no existe, 400 en input inválido, etc.) | 20 |
+| Códigos HTTP correctos en toda la API (201 al crear, 204 al eliminar, 404 si no existe, 400 en input inválido, etc.)| 20 | 
+| Paginación en GET /series con parámetros ?page= y ?limit= | 30 |
+| Búsqueda por nombre con ?q= | 15 |
+| Búsqueda por nombre con ?q= | 15 | 
+| Sistema de rating — tabla propia en la base de datos, endpoints REST propios (POST /series/:id/rating, GET /series/:id/rating, etc.), y visible en el cliente. | 30 |
+|Sistema de rating — tabla propia en la base de datos, endpoints REST propios (POST /series/:id/rating, GET /series/:id/rating, etc.), y visible en el cliente. | 30 |
+| Total | 160 |
+
+## 💡 Reflexión
+
+Hice uso de Go para el desarrollo del backend con librerias como net/http. database/sql modernc.org/sqlite y demás, me parece que el uso de estas librerías para el backend y una buena planificación y organización del desarrollo de este aportaron enormemente a una implementación más sencilla, a pesar de que tomó más tiempo del pensado, evidentemente por la falta de frameworks.
+
+Respecto a los challenges, considero que su implementación si bien resultó laboriosa en términos de investigación y aplicación, no los clasificaría como difíciles debido a que muchas de estas implementaciones se realizaban con cálculos sencillos hacia parametros y queries en la base de datos, pero si  enriquecedores ya que son aspectos que probablemente utilice en futuros desarrollos.
+
+Creo que haría este tipo de proyectos full stack sin frameworks otra vez solamente como un tipo de desafío para mi mismo después de haber utilizado más frameworks e intentar replicar lo que estos realizan para reflexionar sobre todo el trabajo que hacer uno lleva.
 
 
 ## 👨‍💻 AUTOR
 Julián Divas
-
 
 Backend desarrollado en Go para proyecto de Series Tracker
 

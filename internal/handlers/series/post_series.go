@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"encoding/base64"
+	"fmt"
+	"os"
+	"time"
 )
 
 func CreateSeries(db *sql.DB) http.HandlerFunc {
@@ -67,14 +69,17 @@ func CreateSeries(db *sql.DB) http.HandlerFunc {
 		series.CurrentEpisode = currentEpisode
 
 		imagePath := ""
-		file, _, fileErr := r.FormFile("image")
+		file, header, fileErr := r.FormFile("image")
 		if fileErr == nil {
 			defer file.Close()
-			imageBytes, readErr := io.ReadAll(file)
-			if readErr == nil {
-				mime := http.DetectContentType(imageBytes)
-				b64 := base64.StdEncoding.EncodeToString(imageBytes)
-				imagePath = "data:" + mime + ";base64," + b64
+			fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), header.Filename)
+			dst, err := os.Create("uploads/" + fileName)
+			if err == nil {
+				defer dst.Close()
+				_, copyErr := io.Copy(dst, file)
+				if copyErr == nil {
+					imagePath = "uploads/" + fileName
+				}
 			}
 		}
 

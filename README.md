@@ -2,6 +2,12 @@
 
 Backend en Go para una aplicación de seguimiento de series. Permite gestionar series, ratings y archivos de imagen asociados.
 
+
+## 🔗 Repositorios
+
+- **Backend:** https://github.com/jdivass/Proyecto1-Web-Backend.git
+- **FrontEnd:** https://github.com/jdivass/Proyecto1-Web_Frontend.git
+
 ---
 
 ## 🚀 Tecnologías usadas
@@ -123,8 +129,7 @@ Y se acceden mediante:
 http://localhost:8080/uploads/nombre.jpg
 ```
 
-En producción:
-
+###
 ```
 https://proyecto1-web-backend-production.up.railway.app/uploads/nombre.jpg
 ```
@@ -135,9 +140,7 @@ https://proyecto1-web-backend-production.up.railway.app/uploads/nombre.jpg
 
 Backend desplegado en:
 
-```
 https://proyecto1-web-backend-production.up.railway.app
-```
 
 ---
 
@@ -179,6 +182,3 @@ Creo que haría este tipo de proyectos full stack sin frameworks otra vez solame
 Julián Divas
 
 Backend desarrollado en Go para proyecto de Series Tracker
-
-Repositorio:
-https://github.com/jdivass/Proyecto1-Web-Backend.git
